@@ -226,6 +226,12 @@ void SolverDDP::forwardPass(const double& steplength) {
 
     m->get_state().diff(xs_[t], xs_try_[t], dx_[t]);
     us_try_[t].noalias() = us_[t] - k_[t] * steplength - K_[t] * dx_[t];
+
+    // TODO: Clamp u
+    Eigen::VectorXd control_limit = Eigen::VectorXd::Ones(us_try_[t].size());
+    control_limit *= 150.;
+    // us_try_[t].noalias() = us_try_[t].cwiseMax(-control_limit).cwiseMin(control_limit);
+
     m->calc(d, xs_try_[t], us_try_[t]);
     xs_try_[t + 1] = d->get_xnext();
     cost_try_ += d->cost;
