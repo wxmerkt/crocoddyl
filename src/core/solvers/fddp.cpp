@@ -179,6 +179,7 @@ void SolverFDDP::forwardPass(const double& steplength) {
   unsigned int const& T = problem_.get_T();
   for (unsigned int t = 0; t < T; ++t) {
     ActionModelAbstract* m = problem_.running_models_[t];
+    const unsigned int& nu = m->get_nu();
     boost::shared_ptr<ActionDataAbstract>& d = problem_.running_datas_[t];
     if ((is_feasible_) || (steplength == 1)) {
       xs_try_[t] = xnext_;
@@ -187,6 +188,13 @@ void SolverFDDP::forwardPass(const double& steplength) {
     }
     m->get_state().diff(xs_[t], xs_try_[t], dx_[t]);
     us_try_[t].noalias() = us_[t] - k_[t] * steplength - K_[t] * dx_[t];
+
+    us_try_[t].noalias() = us_try_[t].cwiseMax(
+      Eigen::VectorXd::Constant(nu, -100)
+    ).cwiseMin(
+      Eigen::VectorXd::Constant(nu, 100)
+    );
+
     m->calc(d, xs_try_[t], us_try_[t]);
     xnext_ = d->get_xnext();
     cost_try_ += d->cost;
