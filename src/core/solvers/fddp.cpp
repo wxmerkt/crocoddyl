@@ -189,9 +189,8 @@ void SolverFDDP::forwardPass(const double& steplength) {
     us_try_[t].noalias() = us_[t] - k_[t] * steplength - K_[t] * dx_[t];
 
     // TODO: Clamp u
-    Eigen::VectorXd control_limit = Eigen::VectorXd::Ones(us_try_[t].size());
-    control_limit *= 150.;
-    us_try_[t].noalias() = us_try_[t].cwiseMax(-control_limit).cwiseMin(control_limit);
+    Eigen::VectorXd control_limit = 150. * Eigen::VectorXd::Ones(us_try_[t].size());
+    us_try_[t] = us_try_[t].cwiseMax(-control_limit).cwiseMin(control_limit);
 
     m->calc(d, xs_try_[t], us_try_[t]);
     xnext_ = d->get_xnext();
