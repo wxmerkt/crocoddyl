@@ -44,6 +44,7 @@ bool SolverDDP::solve(const std::vector<Eigen::VectorXd>& init_xs, const std::ve
   }
   was_feasible_ = false;
 
+  std::cout << "Ready to party for " << maxiter << " iterations with xreg_" << xreg_ << ", ureg_=" << ureg_ << std::endl;
   bool recalc = true;
   for (iter_ = 0; iter_ < maxiter; ++iter_) {
     while (true) {
@@ -88,6 +89,7 @@ bool SolverDDP::solve(const std::vector<Eigen::VectorXd>& init_xs, const std::ve
       }
     }
 
+    std::cout << "Iter-" << iter_ << " alpha-search done" << std::endl;
     if (steplength_ > th_step_) {
       std::cout << "Iter-" << iter_ << " decrease regularization" << std::endl;
       decreaseRegularization();
@@ -96,7 +98,7 @@ bool SolverDDP::solve(const std::vector<Eigen::VectorXd>& init_xs, const std::ve
       std::cout << "Iter-" << iter_ << " increase regularization" << std::endl;
       increaseRegularization();
       if (xreg_ == regmax_) {
-        std::cout << "Iter-" << iter_ << " maximum regularization :'(" << std::endl;
+        std::cout << "Iter-" << iter_ << " maximum regularization :'(  " << regmax_ << std::endl;
         return false;
       }
     }
@@ -104,6 +106,7 @@ bool SolverDDP::solve(const std::vector<Eigen::VectorXd>& init_xs, const std::ve
 
     unsigned int const& n_callbacks = static_cast<unsigned int>(callbacks_.size());
     for (unsigned int c = 0; c < n_callbacks; ++c) {
+      std::cout << "Iter-" << iter_ << " calling callback #" << c << std::endl;
       CallbackAbstract& callback = *callbacks_[c];
       callback(*this);
     }
