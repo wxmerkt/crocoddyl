@@ -6,6 +6,7 @@
 // All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
 #include "crocoddyl/core/solvers/ddp.hpp"
 
 namespace crocoddyl {
@@ -57,6 +58,7 @@ bool SolverDDP::solve(const std::vector<Eigen::VectorXd>& init_xs, const std::ve
           continue;
         }
       }
+      std::cout << "Iter-" << iter_ << " breaking things" << std::endl;
       break;
     }
     expectedImprovement();
@@ -74,20 +76,25 @@ bool SolverDDP::solve(const std::vector<Eigen::VectorXd>& init_xs, const std::ve
       dVexp_ = steplength_ * (d_[0] + 0.5 * steplength_ * d_[1]);
 
       if (d_[0] < th_grad_ || !is_feasible_ || dV_ > th_acceptstep_ * dVexp_) {
+        std::cout << "Iter-" << iter_ << " d_[0]=" << d_[0] << " < th_grad_=" << th_grad_ << " || !is_feasible_=" << !is_feasible_ << " || dV_=" << dV_ << " > th_acceptstep_=" << th_acceptstep_ << "*dVexp_=" << dVexp_ << std::endl;
         was_feasible_ = is_feasible_;
         setCandidate(xs_try_, us_try_, true);
         cost_ = cost_try_;
         recalc = true;
+        std::cout << "Iter-" << iter_ << " breaking things #2" << std::endl;
         break;
       }
     }
 
     if (steplength_ > th_step_) {
+      std::cout << "Iter-" << iter_ << " decrease regularization" << std::endl;
       decreaseRegularization();
     }
     if (steplength_ == alphas_.back()) {
+      std::cout << "Iter-" << iter_ << " increase regularization" << std::endl;
       increaseRegularization();
       if (xreg_ == regmax_) {
+        std::cout << "Iter-" << iter_ << " maximum regularization :'(" << std::endl;
         return false;
       }
     }
@@ -100,9 +107,13 @@ bool SolverDDP::solve(const std::vector<Eigen::VectorXd>& init_xs, const std::ve
     }
 
     if (was_feasible_ && stop_ < th_stop_) {
+      std::cout << "Iter-" << iter_ << " are we stopping I guess we do" << std::endl;
       return true;
     }
+
+    std::cout << "Iter-" << iter_ << " - next iteration!" << std::endl;
   }
+  std::cout << "Iter-" << iter_ << " FAIL :(" << std::endl;
   return false;
 }
 
