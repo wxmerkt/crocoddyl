@@ -6,7 +6,6 @@
 // All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
 #include "crocoddyl/core/solvers/ddp.hpp"
 
 namespace crocoddyl {
@@ -44,7 +43,6 @@ bool SolverDDP::solve(const std::vector<Eigen::VectorXd>& init_xs, const std::ve
   }
   was_feasible_ = false;
 
-  std::cout << "Ready to party for " << maxiter << " iterations with xreg_" << xreg_ << ", ureg_=" << ureg_ << std::endl;
   bool recalc = true;
   for (iter_ = 0; iter_ < maxiter; ++iter_) {
     while (true) {
@@ -52,16 +50,13 @@ bool SolverDDP::solve(const std::vector<Eigen::VectorXd>& init_xs, const std::ve
         computeDirection(recalc);
       } catch (const char* msg) {
         recalc = false;
-        std::cout << "Iter-" << iter_ << "increase regularization in first while" << std::endl;
         increaseRegularization();
         if (xreg_ == regmax_) {
-          std::cout << "Iter-" << iter_ << " - maximum regularization, " << regmax_ << std::endl;
           return false;
         } else {
           continue;
         }
       }
-      std::cout << "Iter-" << iter_ << " breaking things" << std::endl;
       break;
     }
     expectedImprovement();
@@ -79,26 +74,20 @@ bool SolverDDP::solve(const std::vector<Eigen::VectorXd>& init_xs, const std::ve
       dVexp_ = steplength_ * (d_[0] + 0.5 * steplength_ * d_[1]);
 
       if (d_[0] < th_grad_ || !is_feasible_ || dV_ > th_acceptstep_ * dVexp_) {
-        std::cout << "Iter-" << iter_ << " d_[0]=" << d_[0] << " < th_grad_=" << th_grad_ << " || !is_feasible_=" << !is_feasible_ << " || dV_=" << dV_ << " > th_acceptstep_=" << th_acceptstep_ << "*dVexp_=" << dVexp_ << std::endl;
         was_feasible_ = is_feasible_;
         setCandidate(xs_try_, us_try_, true);
         cost_ = cost_try_;
         recalc = true;
-        std::cout << "Iter-" << iter_ << " breaking things #2" << std::endl;
         break;
       }
     }
 
-    std::cout << "Iter-" << iter_ << " alpha-search done" << std::endl;
     if (steplength_ > th_step_) {
-      std::cout << "Iter-" << iter_ << " decrease regularization" << std::endl;
       decreaseRegularization();
     }
     if (steplength_ == alphas_.back()) {
-      std::cout << "Iter-" << iter_ << " increase regularization" << std::endl;
       increaseRegularization();
       if (xreg_ == regmax_) {
-        std::cout << "Iter-" << iter_ << " maximum regularization :'(  " << regmax_ << std::endl;
         return false;
       }
     }
@@ -106,19 +95,14 @@ bool SolverDDP::solve(const std::vector<Eigen::VectorXd>& init_xs, const std::ve
 
     unsigned int const& n_callbacks = static_cast<unsigned int>(callbacks_.size());
     for (unsigned int c = 0; c < n_callbacks; ++c) {
-      std::cout << "Iter-" << iter_ << " calling callback #" << c << std::endl;
       CallbackAbstract& callback = *callbacks_[c];
       callback(*this);
     }
 
     if (was_feasible_ && stop_ < th_stop_) {
-      std::cout << "Iter-" << iter_ << " are we stopping I guess we do" << std::endl;
       return true;
     }
-
-    std::cout << "Iter-" << iter_ << " - next iteration!" << std::endl;
   }
-  std::cout << "Iter-" << iter_ << " FAIL :(" << std::endl;
   return false;
 }
 
