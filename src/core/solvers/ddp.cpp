@@ -51,8 +51,10 @@ bool SolverDDP::solve(const std::vector<Eigen::VectorXd>& init_xs, const std::ve
         computeDirection(recalc);
       } catch (const char* msg) {
         recalc = false;
+        std::cout << "Iter-" << iter_ << "increase regularization in first while" << std::endl;
         increaseRegularization();
         if (xreg_ == regmax_) {
+          std::cout << "Iter-" << iter_ << " - maximum regularization, " << regmax_ << std::endl;
           return false;
         } else {
           continue;
