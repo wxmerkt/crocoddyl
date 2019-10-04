@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <iostream>
+#include "crocoddyl/core/solvers/timer.h"
 #include "crocoddyl/core/solvers/box-ddp.hpp"
 
 namespace crocoddyl {
@@ -54,18 +55,23 @@ void SolverBoxDDP::computeGains(const unsigned int& t) {
     u_ll_ = problem_.running_models_[t]->get_u_lb() - us_[t];
     u_hl_ = problem_.running_models_[t]->get_u_ub() - us_[t];
 
-    BoxQPSolution boxqp_sol = BoxQP(Quu_[t], Qu_[t], u_ll_, u_hl_, us_[t], 0.1, 100, 1e-5, ureg_);
+    BoxQPData boxqp_data_(Quu_[t].size());
+    exotica::Timer timer;
+    // BoxQPSolution boxqp_sol = BoxQP(Quu_[t], Qu_[t], u_ll_, u_hl_, us_[t], 0.1, 100, 1e-5, ureg_);
+    BoxQP(boxqp_data_, Quu_[t], Qu_[t], u_ll_, u_hl_, us_[t], 0.1, 100, 1e-5, ureg_);
+    // std::cout << "[" << t << "] BoxQP took " << timer.GetDuration() << " - " << boxqp_sol.iterations_taken << "\n";
+    std::cout << "[" << t << "] BoxQP took " << timer.GetDuration() << "\n";
 
     Quu_inv_[t].setZero();
-    for (size_t i = 0; i < boxqp_sol.free_idx.size(); ++i)
-      for (size_t j = 0; j < boxqp_sol.free_idx.size(); ++j)
-        Quu_inv_[t](boxqp_sol.free_idx[i], boxqp_sol.free_idx[j]) = boxqp_sol.Hff_inv(i, j);
+    for (size_t i = 0; i < boxqp_data_.free_idx.size(); ++i)
+      for (size_t j = 0; j < boxqp_data_.free_idx.size(); ++j)
+        Quu_inv_[t](boxqp_data_.free_idx[i], boxqp_data_.free_idx[j]) = boxqp_data_.Hff_inv(i, j);
 
     // Compute controls
     K_[t].noalias() = Quu_inv_[t] * Qxu_[t].transpose();
-    k_[t].noalias() = -boxqp_sol.x;
+    k_[t].noalias() = -boxqp_data_.x;
 
-    for (size_t j = 0; j < boxqp_sol.clamped_idx.size(); ++j) K_[t](boxqp_sol.clamped_idx[j]) = 0.0;
+    for (size_t j = 0; j < boxqp_data_.clamped_idx.size(); ++j) K_[t](boxqp_data_.clamped_idx[j]) = 0.0;
   }
 }
 
