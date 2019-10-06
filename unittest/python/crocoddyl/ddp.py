@@ -228,7 +228,8 @@ class SolverDDP(SolverAbstract):
             if self.u_reg == 0:
                 self.Vxx[t][:, :] = self.Qxx[t] - np.dot(self.Qxu[t], self.K[t])
             else:
-                self.Vxx[t][:, :] = self.Qxx[t] + np.dot(np.dot(self.K[t].T, self.Quu[t]), self.K[t]) - np.dot(self.K[t].T, self.Qux[t]) - np.dot(self.Qux[t].T, self.K[t])
+                self.Vxx[t][:, :] = self.Qxx[t] + np.dot(np.dot(self.K[t].T, self.Quu[t]), self.K[t]) - np.dot(
+                    self.K[t].T, self.Qux[t]) - np.dot(self.Qux[t].T, self.K[t])
 
             self.Vxx[t][:, :] = 0.5 * (self.Vxx[t][:, :] + self.Vxx[t][:, :].T)  # ensure symmetric
 
