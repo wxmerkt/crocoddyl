@@ -194,7 +194,16 @@ void SolverDDP::backwardPass() {
       Quuk_[t].noalias() = Quu_[t] * k_[t];
       Vx_[t].noalias() = Qx_[t] + K_[t].transpose() * Quuk_[t] - 2 * K_[t].transpose() * Qu_[t];
     }
-    Vxx_[t].noalias() = Qxx_[t] - Qxu_[t] * K_[t];
+
+    if (std::isnan(ureg_)) {
+      Vxx_[t].noalias() = Qxx_[t] - Qxu_[t] * K_[t];
+    } else {
+      // TODO: Use tmp for np.dot(self.K[t].T, self.Quu[t])
+      // NB: As in Python, we assume Qux = Qxu^T
+      Vxx_[t].noalias() =
+          Qxx_[t] + K_[t].transpose() * Quu_[t] * K_[t] - K_[t].transpose() * Qxu_[t].transpose() - Qxu_[t] * K_[t];
+    }
+
     Vxx_[t] = 0.5 * (Vxx_[t] + Vxx_[t].transpose()).eval();  // TODO(cmastalli): as suggested by Nicolas
 
     if (!std::isnan(xreg_)) {
