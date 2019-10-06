@@ -16,12 +16,13 @@
 
 namespace crocoddyl {
 
-class SolverBoxDDP : public SolverDDP {
+template <class UnderlyingSolver>
+class AbstractControlLimitedDDPSolver : public UnderlyingSolver {
  public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  explicit SolverBoxDDP(ShootingProblem& problem);
-  ~SolverBoxDDP();
+  explicit AbstractControlLimitedDDPSolver(ShootingProblem& problem);
+  ~AbstractControlLimitedDDPSolver();
 
   virtual void allocateData();
   virtual void computeGains(unsigned int const& t);
@@ -32,6 +33,9 @@ class SolverBoxDDP : public SolverDDP {
   Eigen::VectorXd u_ll_;
   Eigen::VectorXd u_hl_;
 };
+
+typedef AbstractControlLimitedDDPSolver<SolverDDP> SolverBoxDDP;
+typedef AbstractControlLimitedDDPSolver<SolverFDDP> SolverBoxFDDP;
 
 }  // namespace crocoddyl
 

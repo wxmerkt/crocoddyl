@@ -24,6 +24,13 @@ void exposeSolverBoxDDP() {
       bp::init<ShootingProblem&>(bp::args(" self", " problem"),
                                  "Initialize the vector dimension.\n\n"
                                  ":param problem: shooting problem.")[bp::with_custodian_and_ward<1, 2>()]);
+  bp::class_<SolverBoxFDDP, bp::bases<SolverDDP> >(
+      "SolverBoxFDDP",
+      "Box-constrained FDDP solver.\n\n"
+      ":param shootingProblem: shooting problem (list of action models along trajectory.)",
+      bp::init<ShootingProblem&>(bp::args(" self", " problem"),
+                                 "Initialize the vector dimension.\n\n"
+                                 ":param problem: shooting problem.")[bp::with_custodian_and_ward<1, 2>()]);
 }
 
 }  // namespace python
