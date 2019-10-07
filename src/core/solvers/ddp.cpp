@@ -200,8 +200,10 @@ void SolverDDP::backwardPass() {
     } else {
       // TODO: Use tmp for np.dot(self.K[t].T, self.Quu[t])
       // NB: As in Python, we assume Qux = Qxu^T
-      Vxx_[t].noalias() =
-          Qxx_[t] + K_[t].transpose() * Quu_[t] * K_[t] - K_[t].transpose() * Qxu_[t].transpose() - Qxu_[t] * K_[t];
+      Eigen::MatrixXd QuuK_ =
+          Quu_[t] * K_[t];  // create variables, this is for efficiency because avoids to create dynamic memory. When
+                            // you have more than two matrices multiplication, then you need to split this expression
+      Vxx_[t] = Qxx_[t] + K_[t].transpose() * QuuK_ - K_[t].transpose() * Qxu_[t].transpose() - Qxu_[t] * K_[t];
     }
 
     Vxx_[t] = 0.5 * (Vxx_[t] + Vxx_[t].transpose()).eval();  // TODO(cmastalli): as suggested by Nicolas
