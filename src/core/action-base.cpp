@@ -40,10 +40,11 @@ void ActionModelAbstract::quasiStatic(const boost::shared_ptr<ActionDataAbstract
 
   const std::size_t& ndx = state_->get_ndx();
   Eigen::VectorXd dx = Eigen::VectorXd::Zero(ndx);
+  Eigen::VectorXd du(nu_);
+  du.setZero();
   if (nu_ == 0) {
     // TODO(cmastalli): create a method for autonomous systems
   } else {
-    Eigen::VectorXd du = Eigen::VectorXd::Zero(nu_);
     for (std::size_t i = 0; i < maxiter; ++i) {
       calcDiff(data, x, u);
       state_->diff(x, data->xnext, dx);
