@@ -16,6 +16,7 @@ namespace crocoddyl {
 
 class CostModelFramePlacement : public CostModelAbstract {
  public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   CostModelFramePlacement(boost::shared_ptr<StateMultibody> state,
                           boost::shared_ptr<ActivationModelAbstract> activation, const FramePlacement& Fref,
                           const std::size_t& nu);
