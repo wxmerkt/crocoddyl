@@ -1,32 +1,43 @@
-language: cpp
+# This config file for Travis CI utilizes ros-industrial/industrial_ci package.
+# For more info for the package, see https://github.com/ros-industrial/industrial_ci/blob/master/README.rst
+language: generic
 os: [
   "linux"
 ]
+services:
+  - docker
 
+# include the following block if the C/C++ build artifacts should get cached by Travis,
+# CCACHE_DIR needs to get set as well to actually fill the cache
+cache:
+  directories:
+    - $HOME/.ccache
+
+git:
+  quiet: true # optional, silences the cloning of the target repository
+
+# configure the build environment(s)
+# https://github.com/ros-industrial/industrial_ci/blob/master/doc/index.rst#variables-you-can-configure
+env:
+  global: # global settings for all jobs
+    - CCACHE_DIR=$HOME/.ccache # enables C/C++ caching in industrial_ci
+    - ROS_REPO=ros-testing
+    - ROS_PARALLEL_JOBS=-j2 # Don't exhaust virtual memory
+    - DOCKER_RUN_OPTS='-e TRAVIS_BRANCH -e GITHUBKEY' # Pass CI variables to Docker
+    - UPSTREAM_WORKSPACE=file
+  jobs:
+    - ROS_DISTRO="kinetic" CMAKE_ARGS='-DCMAKE_BUILD_TYPE=Debug'
+    - ROS_DISTRO="kinetic" CMAKE_ARGS='-DCMAKE_BUILD_TYPE=Release'
+    - ROS_DISTRO="kinetic" PRERELEASE=true
+    - ROS_DISTRO="kinetic" CLANG_FORMAT_CHECK=file CLANG_FORMAT_VERSION=6.0
+    - ROS_DISTRO="melodic" CMAKE_ARGS='-DCMAKE_BUILD_TYPE=Debug'
+    - ROS_DISTRO="melodic" CMAKE_ARGS='-DCMAKE_BUILD_TYPE=Release'
+    - ROS_DISTRO="melodic" PRERELEASE=true
 jobs:
-  include:
-    - dist: bionic
-      env: CMAKE_BUILD_TYPE=Debug DIST=bionic
-    - dist: bionic
-      env: CMAKE_BUILD_TYPE=Release DIST=bionic
-    - dist: xenial
-      env: CMAKE_BUILD_TYPE=Debug DIST=xenial
-    - dist: xenial
-      env: CMAKE_BUILD_TYPE=Release DIST=xenial
-    - dist: bionic
-      env: CHECK_CLANG_FORMAT=1
-
-before_install:
-  - echo "deb [arch=amd64] http://robotpkg.openrobots.org/wip/packages/debian/pub $(lsb_release -sc) robotpkg" | sudo tee -a /etc/apt/sources.list.d/robotpkg.list && echo "deb [arch=amd64] http://robotpkg.openrobots.org/packages/debian/pub $(lsb_release -sc) robotpkg" | sudo tee -a /etc/apt/sources.list.d/robotpkg.list && curl http://robotpkg.openrobots.org/packages/debian/robotpkg.key | sudo apt-key add -
-
+  allow_failures:
+    - env: ROS_DISTRO="kinetic" PRERELEASE=true
+    - env: ROS_DISTRO="melodic" PRERELEASE=true
 install:
-  - sudo apt update -qq
-  - /bin/bash .travis/install-prerequisites.sh
-  - export PATH=/opt/openrobots/bin:$PATH
-  - export PKG_CONFIG_PATH=/opt/openrobots/lib/pkgconfig:$PKG_CONFIG_PATH
-  - export LD_LIBRARY_PATH=/opt/openrobots/lib:$LD_LIBRARY_PATH
-  - export PYTHONPATH=/opt/openrobots/lib/python2.7/site-packages:$PYTHONPATH
-
+  - git clone --quiet --depth 1 https://github.com/ros-industrial/industrial_ci.git .ci_config -b legacy
 script:
-  - /bin/bash .travis/build-and-test.sh
-  - /bin/bash .travis/check-formatting.sh
+  - source .ci_config/travis.sh
