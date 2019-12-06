@@ -25,7 +25,7 @@ env:
     - ROS_PARALLEL_JOBS=-j2 # Don't exhaust virtual memory
     - DOCKER_RUN_OPTS='-e TRAVIS_BRANCH -e GITHUBKEY' # Pass CI variables to Docker
     - UPSTREAM_WORKSPACE=file
-  jobs:
+  matrix:
     - ROS_DISTRO="kinetic" CMAKE_ARGS='-DCMAKE_BUILD_TYPE=Debug'
     - ROS_DISTRO="kinetic" CMAKE_ARGS='-DCMAKE_BUILD_TYPE=Release'
     - ROS_DISTRO="kinetic" PRERELEASE=true
@@ -33,7 +33,7 @@ env:
     - ROS_DISTRO="melodic" CMAKE_ARGS='-DCMAKE_BUILD_TYPE=Debug'
     - ROS_DISTRO="melodic" CMAKE_ARGS='-DCMAKE_BUILD_TYPE=Release'
     - ROS_DISTRO="melodic" PRERELEASE=true
-jobs:
+matrix:
   allow_failures:
     - env: ROS_DISTRO="kinetic" PRERELEASE=true
     - env: ROS_DISTRO="melodic" PRERELEASE=true
